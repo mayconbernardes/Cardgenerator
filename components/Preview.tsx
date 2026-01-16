@@ -87,8 +87,8 @@ const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ data, theme }, ref) 
         )}
       </div>
 
-      <div className={`text-center mt-6 text-xs opacity-50 hover:opacity-100 transition-opacity ${theme.textClasses} ${hasBgImage ? 'text-white font-semibold shadow-black drop-shadow-md' : ''}`}>
-        created by <a href="https://www.instagram.com/crea_ktif/" target="_blank" rel="noopener noreferrer" className="card-link font-bold hover:underline">@crea_ktif</a>
+      <div className={`text-center mt-6 px-4 py-2 rounded-lg transition-opacity ${hasBgImage ? 'text-white font-semibold bg-black/40 backdrop-blur-sm drop-shadow-lg' : 'text-xs opacity-50 hover:opacity-100'}`}>
+        <span className="text-xs">created by <a href="https://www.instagram.com/crea_ktif/" target="_blank" rel="noopener noreferrer" className="card-link font-bold hover:underline">@crea_ktif</a></span>
       </div>
     </div>
   );
