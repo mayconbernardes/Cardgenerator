@@ -197,6 +197,7 @@ const CardPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showExamples, setShowExamples] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState<ThemeKey>('modern');
+  const [isViewOnly, setViewOnly] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -234,6 +235,10 @@ const CardPage: React.FC = () => {
       }
       
       linkIndex++;
+    }
+
+    if (searchParams.get('view-only') === 'true') {
+      setViewOnly(true);
     }
 
     const data: CardData = {
@@ -411,13 +416,17 @@ const CardPage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col items-center justify-center p-4 md:p-8">
       {/* Top Navigation */}
       <div className="w-full flex items-center justify-between mb-8 md:mb-12">
-        <button
-          onClick={() => navigate('/')}
-          className="flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 text-white hover:bg-slate-700/50 rounded-lg transition-all duration-300"
-        >
-          <ArrowLeft size={20} />
-          <span className="hidden md:inline">Back</span>
-        </button>
+        {!isViewOnly ? (
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 px-4 md:px-6 py-2 md:py-3 text-white hover:bg-slate-700/50 rounded-lg transition-all duration-300"
+          >
+            <ArrowLeft size={20} />
+            <span className="hidden md:inline">Back</span>
+          </button>
+        ) : (
+          <div />
+        )}
         <div className="flex gap-3">
           <button
             onClick={handleCopyUrl}

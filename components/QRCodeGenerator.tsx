@@ -34,6 +34,7 @@ const QRCodeGenerator: React.FC<QRCodeGeneratorProps> = ({
         company: data.companyCity,
         message: data.welcomeMessage,
         photo: data.photoUrl,
+        'view-only': 'true',
       });
 
       // Adicionar links

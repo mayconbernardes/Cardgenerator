@@ -148,9 +148,11 @@ END:VCARD`;
       .replace(/\s+/g, '-')
       .replace(/[^\w-]/g, '');
 
-    const baseUrl = typeof window !== 'undefined' 
-      ? `${window.location.origin}/card/${userId}`
-      : `https://cardgenerator.vercel.app/card/${userId}`;
+    // Usar URL de produção (Vercel) ou localhost
+    const appUrl = import.meta.env.VITE_APP_URL || 
+      (typeof window !== 'undefined' ? window.location.origin : 'https://cardgenerator.vercel.app');
+    
+    const baseUrl = `${appUrl}/card/${userId}`;
 
     // Adicionar parâmetros da query
     const params = new URLSearchParams({
@@ -160,6 +162,7 @@ END:VCARD`;
       photo: data.photoUrl,
       layout: data.layout,
       showQrCode: data.showQrCode.toString(),
+      'view-only': 'true',
     });
 
     data.links.forEach((link, index) => {
