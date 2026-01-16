@@ -71,8 +71,8 @@ const Preview = forwardRef<HTMLDivElement, PreviewProps>(({ data, theme }, ref) 
                 className={`card-link group relative flex items-center justify-center p-3 md:p-4 rounded-lg transition-all duration-300 transform active:scale-95 cursor-pointer overflow-hidden ${theme.buttonClasses}`}
               >
                 <div className="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-gradient-to-r from-transparent to-white opacity-20 group-hover:animate-shine" />
-                <div className={`mr-3 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 ${theme.iconColor}`}>
-                   <Icon size={20} />
+                <div className={`mr-3 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6`}>
+                   <Icon size={20} className="w-5 h-5" style={{ color: 'currentColor' }} />
                 </div>
                 <span className={`font-medium z-10 ${theme.fontFamily}`}>{link.label}</span>
               </a>
