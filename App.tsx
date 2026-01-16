@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { toPng } from 'html-to-image';
 import { jsPDF } from 'jspdf';
-import { Download, Share2, Globe, Sparkles, UserPlus } from 'lucide-react';
+import { Download, Share2, Globe, Sparkles, UserPlus, QrCode } from 'lucide-react';
 import { CardData, Language } from './types';
 import { INITIAL_DATA, TRANSLATIONS, THEMES } from './constants';
 import Editor from './components/Editor';
@@ -141,6 +141,119 @@ END:VCARD`;
     document.body.removeChild(link);
   }, [data]);
 
+  const handleGenerateQRCodePDF = useCallback(async () => {
+    // Gera um ID único baseado no nome do usuário
+    const userId = data.fullName
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w-]/g, '');
+
+    const baseUrl = typeof window !== 'undefined' 
+      ? `${window.location.origin}/card/${userId}`
+      : `https://cardgenerator.vercel.app/card/${userId}`;
+
+    // Adicionar parâmetros da query
+    const params = new URLSearchParams({
+      name: data.fullName,
+      company: data.companyCity,
+      message: data.welcomeMessage,
+      photo: data.photoUrl,
+      layout: data.layout,
+      showQrCode: data.showQrCode.toString(),
+    });
+
+    data.links.forEach((link, index) => {
+      params.append(`link_${index}_type`, link.type);
+      params.append(`link_${index}_label`, link.label);
+      params.append(`link_${index}_value`, link.value);
+    });
+
+    const fullUrl = `${baseUrl}?${params.toString()}`;
+
+    try {
+      // Importar a biblioteca qrcode dinamicamente
+      const QRCode = await import('qrcode');
+      
+      // Gerar QR code como data URL
+      const qrDataUrl = await QRCode.toDataURL(fullUrl, { 
+        width: 300, 
+        margin: 1, 
+        color: { dark: '#000000', light: '#ffffff' }
+      });
+
+      // Criar PDF com o QR Code
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+
+      // Título
+      pdf.setFontSize(20);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Seu Cartão Digital', pageWidth / 2, margin + 10, { align: 'center' });
+
+      // Informações do usuário
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`${data.fullName}`, pageWidth / 2, margin + 25, { align: 'center' });
+      pdf.setFontSize(12);
+      pdf.text(`${data.companyCity}`, pageWidth / 2, margin + 35, { align: 'center' });
+
+      // QR Code
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Escaneie para ver seu cartão:', pageWidth / 2, margin + 50, { align: 'center' });
+
+      // Adicionar imagem QR Code
+      const qrSize = 100;
+      const qrX = (pageWidth - qrSize) / 2;
+      const qrY = margin + 60;
+      pdf.addImage(qrDataUrl, 'PNG', qrX, qrY, qrSize, qrSize);
+
+      // URL do card
+      pdf.setFontSize(8);
+      pdf.setTextColor(100, 100, 100);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(fullUrl, pageWidth / 2, qrY + qrSize + 15, { align: 'center', maxWidth: pageWidth - 40 });
+
+      // Mensagem de boas-vindas
+      pdf.setFontSize(10);
+      pdf.setTextColor(80, 80, 80);
+      pdf.text(`"${data.welcomeMessage}"`, pageWidth / 2, qrY + qrSize + 30, { align: 'center', maxWidth: pageWidth - 40 });
+
+      // Links do card
+      if (data.links.length > 0) {
+        pdf.setFontSize(11);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(0, 0, 0);
+        pdf.text('Contatos:', pageWidth / 2, pageHeight - 80, { align: 'center' });
+
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'normal');
+        let linksY = pageHeight - 70;
+        data.links.forEach((link) => {
+          pdf.text(`${link.label}: ${link.value}`, pageWidth / 2, linksY, { align: 'center', maxWidth: pageWidth - 40 });
+          linksY += 7;
+        });
+      }
+
+      // Rodapé
+      pdf.setFontSize(8);
+      pdf.setTextColor(150, 150, 150);
+      pdf.text('Criado com CardGenius Pro', pageWidth / 2, pageHeight - 10, { align: 'center' });
+
+      pdf.save(`${data.fullName.replace(/\s+/g, '_')}_QR_Code.pdf`);
+    } catch (err) {
+      console.error('Failed to generate QR Code PDF', err);
+      alert(`Escaneie este link com seu celular:\n${fullUrl}`);
+    }
+  }, [data]);
+
   return (
     <GradientBackground className="min-h-screen" animationDuration={20} overlay overlayOpacity={0.03}>
       <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
@@ -222,6 +335,14 @@ END:VCARD`;
               >
                 <UserPlus size={20} />
                 {t.downloadVCard}
+              </button>
+
+              <button 
+                onClick={handleGenerateQRCodePDF}
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-xl font-bold hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg shadow-purple-600/20 active:scale-95"
+              >
+                <QrCode size={20} />
+                Gerar QR Code PDF
               </button>
             </div>
           </div>
